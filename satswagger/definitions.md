@@ -2,6 +2,14 @@
 <a name="definitions"></a>
 ## Definiciones
 
+<a name="actualizacion"></a>
+### Actualizacion
+
+|Nombre|Esquema|
+|---|---|
+|**leida**  <br>*opcional*|boolean|
+
+
 <a name="comprobanteresponse"></a>
 ### ComprobanteResponse
 
@@ -22,6 +30,33 @@
 |**version**  <br>*obligatorio*|string|
 
 
+<a name="envio"></a>
+### Envio
+
+|Nombre|Esquema|
+|---|---|
+|**acEstatus**  <br>*opcional*|string|
+|**acFecha**  <br>*opcional*|string|
+|**acFolio**  <br>*opcional*|string|
+|**acMotivo**  <br>*opcional*|string|
+|**acNoRegistro**  <br>*opcional*|integer|
+|**acNombreArchivo**  <br>*opcional*|string|
+|**acPeriodo**  <br>*opcional*|string|
+|**acTipoArch**  <br>*opcional*|string|
+|**acTipoEnvio**  <br>*opcional*|string|
+
+
+<a name="enviosresponse"></a>
+### EnviosResponse
+
+|Nombre|Esquema|
+|---|---|
+|**archivos**  <br>*obligatorio*|< [Envio](#envio) > array|
+|**archivosPorPagina**  <br>*obligatorio*|integer|
+|**pagina**  <br>*obligatorio*|integer|
+|**totalDeArchivos**  <br>*obligatorio*|integer|
+
+
 <a name="errorresponse"></a>
 ### ErrorResponse
 
@@ -29,6 +64,34 @@
 |---|---|
 |**code**  <br>*obligatorio*|integer|
 |**message**  <br>*obligatorio*|string|
+
+
+<a name="folioresponse"></a>
+### FolioResponse
+
+|Nombre|Esquema|
+|---|---|
+|**folio**  <br>*opcional*|string|
+
+
+<a name="notificacion"></a>
+### Notificacion
+
+|Nombre|Esquema|
+|---|---|
+|**leida**  <br>*opcional*|string|
+|**tipoNotificacion**  <br>*opcional*|string|
+
+
+<a name="notificaciones"></a>
+### Notificaciones
+
+|Nombre|Esquema|
+|---|---|
+|**notificaciones**  <br>*obligatorio*|< [Notificacion](#notificacion) > array|
+|**notificacionesPorPagina**  <br>*obligatorio*|integer|
+|**pagina**  <br>*obligatorio*|integer|
+|**totalNotificaciones**  <br>*obligatorio*|integer|
 
 
 <a name="rfcvalidationresponse"></a>

@@ -1,0 +1,624 @@
+swagger: "2.0"
+info:
+  version: "0.1.0-ALPHA"
+  title: Especificación consumo servicios SAT
+  contact:
+    email: "rgonzalez@corpfolder.com"
+  license:
+    name: Apache 2.0
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+basePath: /v2
+tags:
+  - name: Validación RFC
+  - name: Operaciones con CFDI
+  - name: Timbrado de CFDI
+  - name: Contabilidad Electrónica
+  - name: Buzón Tributario
+host: playground.apistudio.io
+basePath: /try/aacb197a-89e8-4933-a950-22e4e07addca
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  '/rfcs':
+    post:
+      tags: 
+        - Validación RFC
+      summary: Validar RFC.
+      description: Solicitar la validación de claves del Registro Federal de Contribuyentes.
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        -
+          name: rfc
+          in: formData
+          required: true
+          pattern: '[A-Z&Ñ]{3,4}[0-9]{2}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{2}[0-9A]'
+          minLength: 12
+          maxLength: 13
+          type: string
+      responses:
+        '200':
+          description: Solicitud procesada exitosamente
+          schema:
+            $ref: "#/definitions/RfcValidationResponse"
+        default:
+          description: Error inesperado al intentar procesar la solicitud
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  '/comprobantes':
+    get:
+      tags:
+        - Operaciones con CFDI
+      summary: Obtener listado de comprobantes de un emisor.
+      description: Obtener un listado paginado de comprobantes que le hayan emitido y haya emitido un contribuyente activo.
+      parameters:
+        - name: estado
+          description: filtro estado del comprobante.
+          in: query
+          required: false
+          type: string
+          enum:
+            - 'vigente'
+            - 'cancelado'
+        - name: tipoComprobante
+          description: filtro de comprobantes por clave del efecto del CFDI
+          in: query
+          required: false
+          type: string
+          enum:
+            - 'I'
+            - 'E'
+            - 'T'
+            - 'N'
+            - 'P'
+        - name: metodoPago
+          description: filtro de comprobantes por clave del método de pago que aplica para CFDI
+          in: query
+          required: false
+          type: string
+          enum:
+            - 'PUE'
+            - 'PID'
+            - 'PPD'
+        - name: moneda
+          description: filtro de comprobantes por clave de la moneda utilizada para expresar los montos en CFDI
+          in: query
+          required: false
+          type: string
+        - name: serie
+          description: filtro de comprobnates por serie de control interno del contribuyente
+          in: query
+          required: false
+          type: string
+        - name: folio
+          description: filtro de comprobantes por folio de control interno del contribuyente
+          in: query
+          required: false
+          type: string
+        - name: noCertificado
+          description: filtro de comprobantes por el número de serie del certificado de sello digital que ampara a CFDI
+          in: query
+          required: false
+          type: string
+        - name: formaPago
+          description: filtro de comprobantes por la clave de la forma de pago de los bienes o servicios amparados por CFDI
+          in: query
+          required: false
+          type: string
+          minLength: 2
+          maxLength: 2
+        - name: lugarExpedicion
+          description: filtro de comprobantes por el código postal del lugar de expedición del CFDI
+          in: query
+          required: false
+          type: string
+          minLength: 5
+          maxLength: 5
+        - name: uuid
+          description: búsqueda de comprobante por UUID
+          in: query
+          required: false
+          pattern: '[a-f0-9A-F]{8}-[a-f0-9A-F]{4}-[a-f0-9A-F]{4}-[a-f0-9A-F]{4}-[a-f0-9A-F]{12}'
+          minLength: 12
+          maxLength: 12
+          type: string
+        - name: rfcEmisor
+          description: filtro de comprobantes por RFC del Emisor
+          in: query
+          required: false
+          pattern: '[A-Z&Ñ]{3,4}[0-9]{2}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{2}[0-9A]'
+          minLength: 12
+          maxLength: 13
+          type: string
+        - name: rfcReceptor
+          description: filtro de comprobantes por RFC del Receptor
+          in: query
+          required: false
+          pattern: '[A-Z&Ñ]{3,4}[0-9]{2}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{2}[0-9A]'
+          minLength: 12
+          maxLength: 13
+          type: string
+        - name: fechaEmisionInicial
+          description: rango inicial de búsqueda sobre fecha de emisión de CFDIs
+          in: query
+          required: false
+          format: date-time
+          type: string
+        - name: fechaEmisionFinal
+          description: rango final de búsqueda sobre fecha de emisión de CFDIs
+          in: query
+          required: false
+          format: date-time
+          type: string
+        - name: limit
+          description: límite de resultados por página
+          in: query
+          required: false
+          minimum: 1
+          maximum: 100
+          default: 20
+          type: integer
+        - name: offset
+          description: cursor de resultados por página
+          in: query
+          required: false
+          minimum: 0
+          default: 0
+          type: integer
+      responses:
+        '200':
+          description: Listado de resultados encontrados.
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/ComprobanteResponse"
+        default:
+          description: Error inesperado al intentar procesar la solicitud
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  '/comprobantes/{rfcEmisor}/{uuid}.{tipoArchvo}':
+    parameters:
+      - name: rfcEmisor
+        in: path
+        required: true
+        description: Clave del RFC propietario del CFDI (emisor o receptor)
+        pattern: '[A-Z&Ñ]{3,4}[0-9]{2}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])[A-Z0-9]{2}[0-9A]'
+        minLength: 12
+        maxLength: 13
+        type: string
+      - name: uuid
+        in: path
+        required: true
+        description: Identificador único de timbre fiscal digital que corresponde a un CFDI
+        pattern: '[a-f0-9A-F]{8}-[a-f0-9A-F]{4}-[a-f0-9A-F]{4}-[a-f0-9A-F]{4}-[a-f0-9A-F]{12}'
+        minLength: 12
+        maxLength: 12
+        type: string
+      - name: tipoArchvo
+        in: path
+        required: true
+        description: tipo de archivo asociado al CFDI
+        type: string
+        enum:
+          - 'pdf'
+          - 'xml'
+    get:
+      tags: 
+        - Operaciones con CFDI
+      summary: Descargar archivos asociados a CFDI
+      description: Solicitar la descarga de archivos asociados a CFDI.
+      produces:
+      - application/octet-stream
+      responses:
+        '200':
+          description: Archivo asociado encontrado exitosamente.
+          schema:
+            type: file
+        '404':
+          description: No se ha encontrado el archivo asociado solicitado.
+        default:
+          description: Error inesperado al intentar procesar la solicitud
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  '/comprobantes/{rfcEmisor}/acusecancelacion/{uuid}.pdf':
+    parameters:
+      - name: rfcEmisor
+        in: path
+        required: true
+        description: Clave del RFC propietario del CFDI (emisor o receptor)
+        type: string
+      - name: uuid
+        in: path
+        required: true
+        description: Identificador único de timbre fiscal digital que corresponde a un CFDI
+        type: string
+    get:
+      tags:
+        - Operaciones con CFDI
+      summary: Solictar acuse de cancelación.
+      description: Solicitar archivo que representa el acuse de cancelación para un CFDI.
+      responses:
+        '200':
+          description: Archivo asociado encontrado exitosamente.
+          schema:
+            type: file
+        '404':
+          description: No se ha encontrado el archivo asociado solicitado.
+        default:
+          description: Error inesperado al intentar procesar la solicitud
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  '/timbrado/{rfcEmisor}':
+    parameters:
+      - name: rfcEmisor
+        in: path
+        required: true
+        description: Clave del RFC propietario del CFDI (emisor)
+        type: string
+      - name: xmlSellado
+        in: formData
+        required: true
+        description: XML que representa un CFDI que se desea timbrar.
+        type: file
+    post:
+      tags: 
+        - "Timbrado de CFDI"
+      summary: Solicitud de timbrado de comprobantes.
+      description: Enviar una solicitud en forma de CFDI sellado para que sea timbrado por el SAT.
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/xml
+      responses:
+        '200':
+          description: CFDI timbrado exitosamente.
+          schema:
+            type: file
+  '/contabilidad-electronica/{rfc}/envios':
+    post:
+      tags:
+        - 'Contabilidad Electrónica'
+      description: Envíar archivo
+      consumes:
+        - multipart/form-data
+      produces:
+        - application/json
+      parameters:
+      - name: rfc
+        type: string
+        in: path
+        description: RFC del contribuyente
+        required: true
+      - name: Archivo
+        in: formData
+        type: file
+        description: Archivo a envíar
+        required: true
+      responses:
+        "200":
+          description: Folio del acuse de recibido
+          schema:
+            $ref: "#/definitions/FolioResponse"
+        "400":
+          description: Error de envío
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+    get:
+      tags:
+        - 'Contabilidad Electrónica'
+      description: Consultar Envíos
+      operationId: consultar-envios
+      produces:
+        - application/json
+      parameters:
+      - name: rfc
+        type: string
+        in: path
+        required: true
+        description: RFC del contribuyente
+      - name: anio
+        type: integer
+        description: Periodo Fiscal
+        in: query
+        required: true
+        minimum: 2015
+      - name: mesDesde
+        type: integer
+        description: Mes inicial
+        in: query
+        required: true
+        minimum: 1
+        maximum: 13
+      - name: mesFin
+        type: integer
+        description: Mes fin
+        in: query
+        required: true
+        minimum: 1
+        maximum: 13
+      - name: archivoTipo
+        type: array
+        description: Tipo de Archivo
+        in: query
+        items:
+          type: string
+          enum: ["CT", "B", "PL", "XF", "XC"]
+          uniqueItems: true
+          minItems: 1
+          maxItems: 5
+          collectionFormat: csv
+        required: true
+      - name: estatus
+        type: array
+        description: Estatus
+        in: query
+        items:
+          type: string
+          enum: ["Recibido", "Aceptado", "Rechazado"]
+          uniqueItems: true
+          minItems: 1
+          maxItems: 3
+          collectionFormat: csv
+        required: true
+      - name: desde
+        type: integer
+        description: Número de archivos a omitir
+        in: query
+      - name: hasta
+        type: integer
+        description: Número de archivos a recuperar
+        in: query
+      responses:
+        "200":
+          description: Listado de envíos
+          schema:
+            $ref: "#/definitions/EnviosResponse"
+        "400":
+          description: Error de busqueda
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  '/contabilidad-electronica/{rfc}/acuses/{folio}':
+    get:
+      tags:
+        - 'Contabilidad Electrónica'
+      description: Descargar Acuse
+      produces:
+        - application/octet-stream
+      parameters:
+      - name: rfc
+        type: string
+        in: path
+        required: true
+        description: RFC del contribuyente
+      - name: "folio"
+        type: string
+        in: path
+        required: true
+        description: "Folio del acuse a descargar"
+      - name: acuseTipo
+        type: array
+        in: query
+        description: "Tipo de Acuse"
+        items:
+          type: string
+          enum: ["Recibido", "Estatus"]
+          uniqueItems: true
+          minItems: 1
+          maxItems: 1
+        required: true
+      responses:
+        "200":
+          description: "Descarga de Archivo de Acuse"
+          schema:
+            type: file
+        "404":
+          description: "Acuse no encontrado"
+  '/contabilidad-electronica/{rfc}/xmls/{folio}':
+    get:
+      tags:
+        - 'Contabilidad Electrónica'
+      description: Descargar xml
+      produces:
+        - application/xml
+      parameters:
+      - name: rfc
+        type: string
+        in: path
+        required: true
+        description: RFC del contribuyente
+      - name: folio
+        type: string
+        in: path
+        description: "Folio del Acuse perteneciente al XML"
+        required: true
+      responses:
+        "200":
+          description: "Archivo de XML enviado"
+          schema:
+            type: file
+        "404":
+          description: XML no encontrado
+  '/buzon-tributario/{rfc}/bandeja':
+    get:
+      tags:
+        - 'Buzón Tributario'
+      description: "Listar notificaciones"
+      produces:
+        - application/json
+      parameters:
+      - name: rfc
+        type: "string"
+        in: "path"
+        required: true
+        description: "RFC del contribuyente"
+      responses:
+        "200":
+          description: "Listado de notificaciones"
+          schema:
+            $ref: "#/definitions/Notificaciones"
+        "404":
+          description: RFC no encontrado
+  '/buzon-tributario/{rfc}/bandeja/{idNotificacion}':
+    put:
+      tags:
+        - 'Buzón Tributario'
+      description: Actualizar notificación
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+      - name: rfc
+        type: string
+        in: path
+        description: RFC del contribuyente
+        required: true
+      - name: idNotificacion
+        in: path
+        type: string
+        description: Notificación a actualizar
+        required: true
+      - name: body
+        in: body
+        required: true
+        schema:
+          $ref: "#/definitions/Actualizacion"
+      responses:
+        "200":
+          description: Notificación actualizada
+        "400":
+          description: Error de actualización
+          schema:
+            $ref: "#/definitions/ErrorResponse"   
+definitions:
+  ErrorResponse:
+    required:
+      - code
+      - message
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+  RfcValidationResponse:
+    required:
+      - rfc
+      - esValido
+      - motivo
+    properties:
+      rfc:
+        type: string
+      esValido:
+        type: boolean
+      motivo:
+        type: string
+  ComprobanteResponse:
+    required:
+      - uuid
+      - rfcEmisor
+      - rfcReceptor
+      - version
+      - tipoDeComprobante
+      - fechaExpedicion
+      - moneda
+      - total
+      - subTotal
+    properties:
+      uuid:
+        type: string
+      nombreEmisor:
+        type: string
+      nombreReceptor:
+        type: string
+      rfcEmisor:
+        type: string
+      rfcReceptor:
+        type: string
+      version:
+        type: string
+      serie:
+        type: string
+      folio:
+        type: string
+      tipoDeComprobante:
+        type: string
+      fechaExpedicion:
+        type: string
+      moneda:
+        type: string
+      total:
+        type: number
+      subTotal:
+        type: number
+  Notificaciones:
+    required:
+      - notificaciones
+      - totalNotificaciones
+      - pagina
+      - notificacionesPorPagina
+    properties:
+      notificaciones:
+        type: array
+        items:
+          $ref: "#/definitions/Notificacion"
+      totalNotificaciones:
+        type: integer
+      pagina:
+        type: integer
+      notificacionesPorPagina:
+        type: integer
+  Notificacion:
+    properties:
+      tipoNotificacion:
+        type: string
+      leida:
+        type: string
+  EnviosResponse:
+    required:
+      - archivos
+      - totalDeArchivos
+      - pagina
+      - archivosPorPagina
+    properties:
+      archivos:
+        type: array
+        items:
+          $ref: "#/definitions/Envio"
+      totalDeArchivos:
+        type: integer
+      pagina:
+        type: integer
+      archivosPorPagina:
+        type: integer
+  Envio:
+    properties:
+      acNoRegistro:
+        type: integer
+      acPeriodo:
+        type: string
+      acMotivo:
+        type: string
+      acTipoArch:
+        type: string
+      acTipoEnvio:
+        type: string
+      acNombreArchivo:
+        type: string
+      acFolio:
+        type: string
+      acFecha:
+        type: string
+      acEstatus:
+        type: string
+  FolioResponse:
+    properties:
+      folio:
+        type: string
+  Actualizacion:
+    properties:
+      leida:
+        type: boolean

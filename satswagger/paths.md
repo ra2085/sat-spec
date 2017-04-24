@@ -2,6 +2,197 @@
 <a name="paths"></a>
 ## Recursos
 
+<a name="buzon-tributario_resource"></a>
+### Buzón Tributario
+
+<a name="buzon-tributario-rfc-bandeja-get"></a>
+#### GET /buzon-tributario/{rfc}/bandeja
+
+##### Descripción
+Listar notificaciones
+
+
+##### Parámetros
+
+|Tipo|Nombre|Descripción|Esquema|
+|---|---|---|---|
+|**Path**|**rfc**  <br>*obligatorio*|RFC del contribuyente|string|
+
+
+##### Respuestas
+
+|Código HTTP|Descripción|Esquema|
+|---|---|---|
+|**200**|Listado de notificaciones|[Notificaciones](#notificaciones)|
+|**404**|RFC no encontrado|Sin contenido|
+
+
+##### Produce
+
+* `application/json`
+
+
+<a name="buzon-tributario-rfc-bandeja-idnotificacion-put"></a>
+#### PUT /buzon-tributario/{rfc}/bandeja/{idNotificacion}
+
+##### Descripción
+Actualizar notificación
+
+
+##### Parámetros
+
+|Tipo|Nombre|Descripción|Esquema|
+|---|---|---|---|
+|**Path**|**idNotificacion**  <br>*obligatorio*|Notificación a actualizar|string|
+|**Path**|**rfc**  <br>*obligatorio*|RFC del contribuyente|string|
+|**Body**|**body**  <br>*obligatorio*||[Actualizacion](#actualizacion)|
+
+
+##### Respuestas
+
+|Código HTTP|Descripción|Esquema|
+|---|---|---|
+|**200**|Notificación actualizada|Sin contenido|
+|**400**|Error de actualización|[ErrorResponse](#errorresponse)|
+
+
+##### Consume
+
+* `application/json`
+
+
+##### Produce
+
+* `application/json`
+
+
+<a name="contabilidad-electronica_resource"></a>
+### Contabilidad Electrónica
+
+<a name="contabilidad-electronica-rfc-acuses-folio-get"></a>
+#### GET /contabilidad-electronica/{rfc}/acuses/{folio}
+
+##### Descripción
+Descargar Acuse
+
+
+##### Parámetros
+
+|Tipo|Nombre|Descripción|Esquema|
+|---|---|---|---|
+|**Path**|**folio**  <br>*obligatorio*|Folio del acuse a descargar|string|
+|**Path**|**rfc**  <br>*obligatorio*|RFC del contribuyente|string|
+|**Query**|**acuseTipo**  <br>*obligatorio*|Tipo de Acuse|< enum (Recibido, Estatus) > array|
+
+
+##### Respuestas
+
+|Código HTTP|Descripción|Esquema|
+|---|---|---|
+|**200**|Descarga de Archivo de Acuse|file|
+|**404**|Acuse no encontrado|Sin contenido|
+
+
+##### Produce
+
+* `application/octet-stream`
+
+
+<a name="contabilidad-electronica-rfc-envios-post"></a>
+#### POST /contabilidad-electronica/{rfc}/envios
+
+##### Descripción
+Envíar archivo
+
+
+##### Parámetros
+
+|Tipo|Nombre|Descripción|Esquema|
+|---|---|---|---|
+|**Path**|**rfc**  <br>*obligatorio*|RFC del contribuyente|string|
+|**FormData**|**Archivo**  <br>*obligatorio*|Archivo a envíar|file|
+
+
+##### Respuestas
+
+|Código HTTP|Descripción|Esquema|
+|---|---|---|
+|**200**|Folio del acuse de recibido|[FolioResponse](#folioresponse)|
+|**400**|Error de envío|[ErrorResponse](#errorresponse)|
+
+
+##### Consume
+
+* `multipart/form-data`
+
+
+##### Produce
+
+* `application/json`
+
+
+<a name="consultar-envios"></a>
+#### GET /contabilidad-electronica/{rfc}/envios
+
+##### Descripción
+Consultar Envíos
+
+
+##### Parámetros
+
+|Tipo|Nombre|Descripción|Esquema|
+|---|---|---|---|
+|**Path**|**rfc**  <br>*obligatorio*|RFC del contribuyente|string|
+|**Query**|**anio**  <br>*obligatorio*|Periodo Fiscal|integer|
+|**Query**|**archivoTipo**  <br>*obligatorio*|Tipo de Archivo|< enum (CT, B, PL, XF, XC) > array|
+|**Query**|**desde**  <br>*opcional*|Número de archivos a omitir|integer|
+|**Query**|**estatus**  <br>*obligatorio*|Estatus|< enum (Recibido, Aceptado, Rechazado) > array|
+|**Query**|**hasta**  <br>*opcional*|Número de archivos a recuperar|integer|
+|**Query**|**mesDesde**  <br>*obligatorio*|Mes inicial|integer|
+|**Query**|**mesFin**  <br>*obligatorio*|Mes fin|integer|
+
+
+##### Respuestas
+
+|Código HTTP|Descripción|Esquema|
+|---|---|---|
+|**200**|Listado de envíos|[EnviosResponse](#enviosresponse)|
+|**400**|Error de busqueda|[ErrorResponse](#errorresponse)|
+
+
+##### Produce
+
+* `application/json`
+
+
+<a name="contabilidad-electronica-rfc-xmls-folio-get"></a>
+#### GET /contabilidad-electronica/{rfc}/xmls/{folio}
+
+##### Descripción
+Descargar xml
+
+
+##### Parámetros
+
+|Tipo|Nombre|Descripción|Esquema|
+|---|---|---|---|
+|**Path**|**folio**  <br>*obligatorio*|Folio del Acuse perteneciente al XML|string|
+|**Path**|**rfc**  <br>*obligatorio*|RFC del contribuyente|string|
+
+
+##### Respuestas
+
+|Código HTTP|Descripción|Esquema|
+|---|---|---|
+|**200**|Archivo de XML enviado|file|
+|**404**|XML no encontrado|Sin contenido|
+
+
+##### Produce
+
+* `application/xml`
+
+
 <a name="operaciones-con-cfdi_resource"></a>
 ### Operaciones Con CFDI
 

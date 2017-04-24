@@ -26,6 +26,8 @@
 
 ### Etiquetas
 
+* Buzón Tributario
+* Contabilidad Electrónica
 * Operaciones con CFDI
 * Timbrado de CFDI
 * Validación RFC
